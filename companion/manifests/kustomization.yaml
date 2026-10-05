@@ -1,0 +1,41 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Brings up the "steady state" CloudShop stack in one pass:
+#   kubectl apply -k companion/manifests/
+#
+# What's included, and why chapter01/03/08 are deliberately left out:
+#
+# - chapter01/ and chapter03/ each define their OWN `Deployment/product-service`
+#   in the `cloudshop` namespace. Read chapter-by-chapter, that's three snapshots
+#   of the same object evolving (bare Deployment -> full workload contract ->
+#   +PriorityClass/topology spread/PDB/HPA), and `kubectl apply` happily
+#   overwrites one with the next as you follow the book in order. `kustomize
+#   build` can't do that: it refuses to emit two resources with the same
+#   kind/namespace/name in one build. chapter02/'s Deployment is the fullest
+#   self-contained version (it also owns the Namespace/ConfigMap/Secret/Service
+#   that chapter03/'s file assumes already exist), so it's the one included
+#   here. chapter01/ and chapter03/ stay exactly as they are and remain
+#   independently runnable with `kubectl apply -k companion/manifests/chapter01/`
+#   (or chapter03/) while working through those chapters specifically.
+#
+# - chapter08/ (troubleshooting-scenarios.yaml) is a set of Pods deliberately
+#   built to fail -- Pending, ImagePullBackOff, CrashLoopBackOff, OOMKilled,
+#   a bad readiness probe. It's excluded from the steady-state stack on
+#   purpose and stays a separate, optional overlay:
+#     kubectl apply -k companion/manifests/chapter08/
+#
+# One prerequisite outside this kustomization's control: chapter09/'s
+# Application resource is an Argo CD custom resource -- apply it only after
+# Argo CD (and its CRDs) are installed on the cluster, or `kubectl apply`
+# will fail with "no matches for kind". chapter04/'s Gateway and HTTPRoute
+# similarly assume a Gateway API implementation is installed.
+
+resources:
+  - chapter02
+  - chapter04
+  - chapter05
+  - chapter06
+  - chapter07
+  - chapter09
+  - chapter10

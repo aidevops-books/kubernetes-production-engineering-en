@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudshop-production
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/example/production-kubernetes-cloudshop.git
+    targetRevision: main
+    path: environments/production
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cloudshop-production
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+
